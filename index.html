@@ -14,6 +14,9 @@
       padding: 10px;
       min-height: 200px;
       outline: none;
+      white-space: pre-wrap;
+      font-weight: normal;
+      font-size: 14px;
     }
     .toolbar {
       display: flex;
@@ -24,56 +27,119 @@
       padding: 5px 10px;
       cursor: pointer;
     }
+    .editor p {
+      margin: 0;
+      padding: 0;
+    }
+    .editor ul, .editor ol {
+      margin: 0 0 0 20px;
+      padding: 0;
+    }
+    .editor li {
+      margin: 0;
+      padding: 0;
+    }
   </style>
 </head>
 <body>
-  <h1>Online Text Formatter</h1>
-  
+  <h1>Text Formatter</h1>
+
   <div class="toolbar">
-    <button onclick="format('bold')">Bold</button>
-    <button onclick="format('italic')">Italic</button>
-    <button onclick="addLink()">Add Link</button>
-    <button onclick="clearFormatting()">Clear Formatting</button>
+    <button onclick="wrapTag('a', 'target=&quot;_blank&quot; href=&quot;#&quot;')">Default Link</button>
+    <button onclick="wrapTag('a', 'target=&quot;_blank&quot; href=&quot;/profile/bonuses/sport&quot;')">Sport Bonus</button>
+    <button onclick="wrapTag('a', 'target=&quot;_blank&quot; href=&quot;/profile/bonuses/freespins&quot;')">Free Spins</button>
+    <button onclick="wrapTag('a', 'target=&quot;_blank&quot; href=&quot;/profile/bonuses/casino&quot;')">Casino Bonus</button>
+    <button onclick="wrapTag('b', 'style=&quot;color: #FFC700&quot;')">PROMOCODE</button>
+    <button onclick="insertLineBreak()">Insert Line Break</button>
+    <button onclick="insertNonBreakingSpace()">Insert Non-breaking Space</button>
   </div>
 
-  <div class="editor" contenteditable="true" id="editor" placeholder="Вставьте текст из Google Docs"></div>
-  
+  <div class="editor" contenteditable="true" id="editor" placeholder="Вставьте текст сюда"></div>
+
   <button onclick="copyToClipboard()">Copy to Clipboard</button>
 
   <script>
     const editor = document.getElementById('editor');
 
-    // Форматирование текста
-    function format(command) {
-      document.execCommand(command, false, null);
-    }
+    // Обработка вставки текста (очищает ненужное форматирование)
+    editor.addEventListener('paste', (event) => {
+      event.preventDefault();
+      const clipboardData = event.clipboardData || window.clipboardData;
+      const pastedData = clipboardData.getData('text/html') || clipboardData.getData('text/plain');
 
-    // Добавление ссылки
-    function addLink() {
-      const url = prompt("Введите URL", "https://example.com");
-      if (url) {
-        document.execCommand('createLink', false, url);
-      }
-    }
-
-    // Очистка лишнего форматирования
-    function clearFormatting() {
-      const html = editor.innerHTML;
-      editor.innerHTML = html
+      const cleanedData = pastedData
+        .replace(/<!--[\s\S]*?-->/g, '') // Удаляем комментарии
+        .replace(/<meta[^>]*>/g, '') // Удаляем мета-теги
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/g, '') // Удаляем любые стили
+        .replace(/<head[^>]*>[\s\S]*?<\/head>/g, '') // Удаляем head
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/g, '') // Удаляем скрипты
         .replace(/style="[^"]*"/g, '') // Убираем инлайновые стили
         .replace(/<span[^>]*>/g, '') // Убираем <span>
-        .replace(/<\/span>/g, ''); // Закрывающие теги <span>
+        .replace(/<\/span>/g, '') // Закрытие <span>
+        .replace(/<b[^>]*>/g, '') // Убираем теги <b>
+        .replace(/<\/b>/g, '') // Закрываем теги <b>
+        .replace(/<strong[^>]*>/g, '') // Удаляем <strong>
+        .replace(/<\/strong>/g, '') // Закрываем <strong>
+        .replace(/<font[^>]*>/g, '') // Убираем <font>
+        .replace(/<\/font>/g, '') // Закрытие <font>
+        .replace(/<div>/g, '<p>') // Преобразуем <div> в <p>
+        .replace(/<\/div>/g, '</p>') // Закрытие <div> в </p>
+        .replace(/\s*<p>\s*<\/p>\s*/g, '') // Удаляем пустые <p>
+        .replace(/^\s+|\s+$/g, '') // Удаляем лишние пробелы в начале и конце
+        .replace(/\n\s*\n/g, '\n') // Убираем лишние пустые строки
+        .replace(/&nbsp;/g, ' '); // Заменяем неразрывные пробелы на обычные
+
+      editor.innerHTML = cleanedData.trim(); // Убираем лишние пробелы
+    });
+
+    // Оборачиваем выделенный текст в тег
+    function wrapTag(tag, attributes = '') {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) {
+        alert('Выделите текст для применения тега!');
+        return;
+      }
+      const range = selection.getRangeAt(0);
+      const selectedText = range.toString();
+      if (!selectedText) {
+        alert('Выделите текст для применения тега!');
+        return;
+      }
+
+      const wrappedText = `<${tag} ${attributes}>${selectedText}</${tag}>`;
+      range.deleteContents();
+
+      const fragment = document.createDocumentFragment();
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = wrappedText;
+      Array.from(tempDiv.childNodes).forEach((node) => fragment.appendChild(node));
+
+      range.insertNode(fragment);
     }
 
-    // Копирование в буфер обмена
+    // Вставляем разрыв строки
+    function insertLineBreak() {
+      const range = window.getSelection().getRangeAt(0);
+      const br = document.createElement('br');
+      range.insertNode(br);
+    }
+
+    // Вставляем неразрывный пробел
+    function insertNonBreakingSpace() {
+      const range = window.getSelection().getRangeAt(0);
+      const nbsp = document.createTextNode('\u00A0');
+      range.insertNode(nbsp);
+    }
+
+    // Копирование текста в буфер обмена
     function copyToClipboard() {
       const tempInput = document.createElement('textarea');
-      tempInput.value = editor.innerHTML;
+      tempInput.value = editor.innerHTML.trim(); // Убираем лишние пробелы вокруг текста
       document.body.appendChild(tempInput);
       tempInput.select();
       document.execCommand('copy');
       document.body.removeChild(tempInput);
-      alert('Text copied to clipboard!');
+      console.log('Text copied to clipboard!'); // Подтверждение в консоли
     }
   </script>
 </body>

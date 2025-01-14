@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Formatter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .editor {
+      border: 1px solid #ccc;
+      padding: 10px;
+      min-height: 200px;
+      outline: none;
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .toolbar button {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Online Text Formatter</h1>
+  
+  <div class="toolbar">
+    <button onclick="format('bold')">Bold</button>
+    <button onclick="format('italic')">Italic</button>
+    <button onclick="addLink()">Add Link</button>
+    <button onclick="clearFormatting()">Clear Formatting</button>
+  </div>
+
+  <div class="editor" contenteditable="true" id="editor" placeholder="Вставьте текст из Google Docs"></div>
+  
+  <button onclick="copyToClipboard()">Copy to Clipboard</button>
+
+  <script>
+    const editor = document.getElementById('editor');
+
+    // Форматирование текста
+    function format(command) {
+      document.execCommand(command, false, null);
+    }
+
+    // Добавление ссылки
+    function addLink() {
+      const url = prompt("Введите URL", "https://example.com");
+      if (url) {
+        document.execCommand('createLink', false, url);
+      }
+    }
+
+    // Очистка лишнего форматирования
+    function clearFormatting() {
+      const html = editor.innerHTML;
+      editor.innerHTML = html
+        .replace(/style="[^"]*"/g, '') // Убираем инлайновые стили
+        .replace(/<span[^>]*>/g, '') // Убираем <span>
+        .replace(/<\/span>/g, ''); // Закрывающие теги <span>
+    }
+
+    // Копирование в буфер обмена
+    function copyToClipboard() {
+      const tempInput = document.createElement('textarea');
+      tempInput.value = editor.innerHTML;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      alert('Text copied to clipboard!');
+    }
+  </script>
+</body>
+</html>

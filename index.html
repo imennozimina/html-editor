@@ -1,146 +1,415 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text Formatter</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Tool</title>
+<link rel="icon" type="image/png" href="img/edit3.png">
+<style>
+
+  body {
+    background-color: #f2ebd5;
+    font-family: Arial, sans-serif;
+    color: #2f3e46;
+  }
+   #renderContainer {
+      position: absolute;
+      left: -9999px; /* Убираем из видимой области */
+      white-space: pre-wrap; /* Сохраняем переносы строк */
+      visibility: hidden; /* Делаем элемент невидимым */
     }
-    .editor {
-      border: 1px solid #ccc;
-      padding: 10px;
-      min-height: 200px;
-      outline: none;
-      white-space: pre-wrap;
-      font-weight: normal;
-      font-size: 14px;
-    }
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .toolbar button {
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-    .editor p {
-      margin: 0;
-      padding: 0;
-    }
-    .editor ul, .editor ol {
-      margin: 0 0 0 20px;
-      padding: 0;
-    }
-    .editor li {
-      margin: 0;
-      padding: 0;
-    }
-  </style>
+  #textArea {
+    width: 75%;
+    height: 400px;
+    border: 2px solid #1f2e2d;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #fff;
+    color: #1f2e2d;
+    caret-color: red;
+    resize: both;
+  }
+  
+  #tagMenu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+    width: 80%;
+    gap: 10px;
+    margin: 20px 0 20px 190px;
+  }
+  .flex-display {
+    display: flex;
+  }
+
+  #presetMenu {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 20px 20px 20px;
+    gap: 10px;
+  }
+
+  #tagMenu .multy {
+    background-color: indigo;
+  }
+
+  #tagMenu button {
+    padding: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #d04e44;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  #tagMenu .gray_butn {
+    background-color: #4f5160;
+  }
+
+  #presetMenu button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #118292;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  #tagMenu button:hover {
+    background-color: #4a5562;
+  }
+  #tagMenu button:active {
+    background-color: #2e343b;
+  }
+  
+  #presetMenu button:hover {
+    background-color: #598183;
+  }
+  #presetMenu button:active {
+    background-color: #2a3a41;
+  }
+  #presetMenu .prcd_com {
+    border: 2px solid #FFC700;
+    background-color: #000;
+    color: #FFC700;
+    font-weight: 600;
+  }
+  #presetMenu .prcd_kz {
+    border: 2px solid #FF2400;
+    background-color: #fff;
+    color: #FF2400;
+    font-weight: 600;
+  }
+  #copyButton {
+  margin-left: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#copyButton:hover {
+  background-color: #45a049;
+}
+
+</style>
 </head>
 <body>
-  <h1>Text Formatter</h1>
+<div id="tagMenu">
+  <button onclick="wrapText('p')">&lt;p&gt;</button>
+  <button class="multy" onclick="wrapText('p_multiple')">&lt;p&gt;*</button>
+  <button onclick="wrapText('ul')">&lt;ul&gt;</button>
+  <button onclick="wrapText('ol')">&lt;ol&gt;</button>
+  <button onclick="wrapText('li')">&lt;li&gt;</button>
+  <button class="multy" onclick="wrapText('li_multiple')">&lt;li&gt;*</button>
+  <button onclick="wrapText('b')">&lt;b&gt;</button>
+  <button onclick="wrapText('strong')">&lt;strong&gt;</button>
+  <button onclick="wrapText('a')">&lt;a&gt;</button>
+  <button onclick="wrapText('span')">&lt;span&gt;</button>
+  <button onclick="wrapText('br')">&lt;br&gt;</button>
+  <button onclick="wrapText('nbsp')">&lt;nbsp&gt;</button>
+  <button class="gray_butn" onclick="wrapText('comment')">!comment</button>
+  <button class="gray_butn" onclick="wrapText('square_brackets')">[...]</button>
+<button id="copyButton">Копировать</button>
 
-  <div class="toolbar">
-    <button onclick="wrapTag('a', 'target=&quot;_blank&quot; href=&quot;#&quot;')">Default Link</button>
-    <button onclick="wrapTag('a', 'target=&quot;_blank&quot; href=&quot;/profile/bonuses/sport&quot;')">Sport Bonus</button>
-    <button onclick="wrapTag('a', 'target=&quot;_blank&quot; href=&quot;/profile/bonuses/freespins&quot;')">Free Spins</button>
-    <button onclick="wrapTag('a', 'target=&quot;_blank&quot; href=&quot;/profile/bonuses/casino&quot;')">Casino Bonus</button>
-    <button onclick="wrapTag('b', 'style=&quot;color: #FFC700&quot;')">PROMOCODE</button>
-    <button onclick="insertLineBreak()">Insert Line Break</button>
-    <button onclick="insertNonBreakingSpace()">Insert Non-breaking Space</button>
-  </div>
+</div>
+<div id="renderContainer"></div>
 
-  <div class="editor" contenteditable="true" id="editor" placeholder="Вставьте текст сюда"></div>
 
-  <button onclick="copyToClipboard()">Copy to Clipboard</button>
+<div class="flex-display">
+<div id="presetMenu">
+  <button onclick="wrapText('profile_bonuses_sport')">a.bonuses sport</button>
+  <button onclick="wrapText('profile_bonuses_freespins')">a.bonuses freespins</button>
+  <button onclick="wrapText('profile_bonuses_casino')">a.bonuses casino</button>
+  <button onclick="wrapText('profile_personal_info')">a.personal info</button>
+  <button onclick="wrapText('note_line')">p.note line</button>
+  <button onclick="wrapText('champ_ul')">ul.champ</button>
+  <button onclick="wrapText('money_bold')">money - bold</button>
+  <button onclick="wrapText('money_text')">money</button>
+  <button class="prcd_com" onclick="wrapText('promocode_com')">PROMOCODE</button>
+  <button class="prcd_kz" onclick="wrapText('promocode_kz')">PROMOCODE</button>
+</div>
 
-  <script>
-    const editor = document.getElementById('editor');
+<textarea id="textArea" placeholder="Введите текст здесь..." spellcheck="false"></textarea>
 
-    // Обработка вставки текста (очищает ненужное форматирование)
-    editor.addEventListener('paste', (event) => {
+</div>
+
+
+<script>
+  const textArea = document.getElementById('textArea');
+  const undoStack = [];
+  const redoStack = [];
+  let isManualInput = false;
+
+  textArea.addEventListener('dblclick', function (event) {
+    setTimeout(() => {
+      const text = textArea.value;
+      let start = textArea.selectionStart;
+      let end = textArea.selectionEnd;
+
+      // Trim leading whitespace
+      while (start < end && /\s/.test(text[start])) {
+        start++;
+      }
+
+      // Trim trailing whitespace
+      while (end > start && /\s/.test(text[end - 1])) {
+        end--;
+      }
+
+      textArea.setSelectionRange(start, end);
+    }, 0);
+  });
+
+  textArea.addEventListener('input', () => {
+    if (!isManualInput) {
+      saveState();
+    }
+  });
+
+  textArea.addEventListener('keydown', function(event) {
+    if (event.key === 'Tab') {
       event.preventDefault();
-      const clipboardData = event.clipboardData || window.clipboardData;
-      const pastedData = clipboardData.getData('text/html') || clipboardData.getData('text/plain');
+      indentSelectedText();
+    }
+  });
 
-      const cleanedData = pastedData
-        .replace(/<!--[\s\S]*?-->/g, '') // Удаляем комментарии
-        .replace(/<meta[^>]*>/g, '') // Удаляем мета-теги
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/g, '') // Удаляем любые стили
-        .replace(/<head[^>]*>[\s\S]*?<\/head>/g, '') // Удаляем head
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/g, '') // Удаляем скрипты
-        .replace(/style="[^"]*"/g, '') // Убираем инлайновые стили
-        .replace(/<span[^>]*>/g, '') // Убираем <span>
-        .replace(/<\/span>/g, '') // Закрытие <span>
-        .replace(/<b[^>]*>/g, '') // Убираем теги <b>
-        .replace(/<\/b>/g, '') // Закрываем теги <b>
-        .replace(/<strong[^>]*>/g, '') // Удаляем <strong>
-        .replace(/<\/strong>/g, '') // Закрываем <strong>
-        .replace(/<font[^>]*>/g, '') // Убираем <font>
-        .replace(/<\/font>/g, '') // Закрытие <font>
-        .replace(/<div>/g, '<p>') // Преобразуем <div> в <p>
-        .replace(/<\/div>/g, '</p>') // Закрытие <div> в </p>
-        .replace(/\s*<p>\s*<\/p>\s*/g, '') // Удаляем пустые <p>
-        .replace(/^\s+|\s+$/g, '') // Удаляем лишние пробелы в начале и конце
-        .replace(/\n\s*\n/g, '\n') // Убираем лишние пустые строки
-        .replace(/&nbsp;/g, ' '); // Заменяем неразрывные пробелы на обычные
+  function indentSelectedText() {
+    const start = textArea.selectionStart;
+    const end = textArea.selectionEnd;
+    const selectedText = textArea.value.substring(start, end);
+    const indentedText = selectedText.replace(/^/gm, '    ');
+    isManualInput = true;
+    textArea.setRangeText(indentedText, start, end, 'end');
+    isManualInput = false;
 
-      editor.innerHTML = cleanedData.trim(); // Убираем лишние пробелы
-    });
+    // Re-select the indented content
+    textArea.setSelectionRange(start, start + indentedText.length);
+    saveState(true); // Save the state after indenting
+  }
 
-    // Оборачиваем выделенный текст в тег
-    function wrapTag(tag, attributes = '') {
-      const selection = window.getSelection();
-      if (!selection.rangeCount) {
-        alert('Выделите текст для применения тега!');
-        return;
+  function wrapText(tag) {
+    console.log('Wrapping text with tag:', tag);
+    saveState(true); // Save the state before modification
+
+    let start = textArea.selectionStart;
+    let end = textArea.selectionEnd;
+    const selectedText = textArea.value.substring(start, end);
+    let wrappedText = `<${tag}>${selectedText}</${tag}>`;
+
+    if (tag === 'a') {
+      wrappedText = `<a target="_blank" href="#">${selectedText}</a>`;
+    } else if (tag === 'br') {
+      wrappedText = `<br>`;
+    } else if (tag === 'nbsp') {
+      wrappedText = `&nbsp;`;
+    } else if (tag === 'comment') {
+      wrappedText = `<!-- ${selectedText} -->`;
+    } else if (tag === 'square_brackets') {
+      wrappedText = `[${selectedText}]`;
+    } else if (tag === 'promocode_com') {
+      wrappedText = `<strong style="color: #FFC700">${selectedText}</strong>`;
+    } else if (tag === 'promocode_kz') {
+      wrappedText = `<b style="color: #FF2400">${selectedText}</b>`;
+    } else if (tag === 'profile_bonuses_sport') {
+      wrappedText = `<a target="_blank" href="/profile/bonuses/sport">${selectedText}</a>`;
+    } else if (tag === 'profile_bonuses_freespins') {
+      wrappedText = `<a target="_blank" href="/profile/bonuses/freespins">${selectedText}</a>`;
+    } else if (tag === 'profile_bonuses_casino') {
+      wrappedText = `<a target="_blank" href="/profile/bonuses/casino">${selectedText}</a>`;
+    } else if (tag === 'profile_personal_info') {
+      wrappedText = `<a target="_blank" href="/profile/personal-info">${selectedText}</a>`;
+    } else if (tag === 'note_line') {
+      wrappedText = `<p class="note-line">${selectedText}</p>`;
+    } else if (tag === 'champ_ul') {
+      wrappedText = `<ul class="ui-championship-rules__points">\n${selectedText}\n</ul>`;
+    } else if (tag === 'money_bold') {
+      wrappedText = `<b style="white-space: nowrap;">${selectedText}</b>`;
+    } else if (tag === 'money_text') {
+      wrappedText = `<span style="white-space: nowrap;">${selectedText}</span>`;
+    } else if (tag === 'ul' || tag === 'ol') {
+      wrappedText = `<${tag}>\n${selectedText}\n</${tag}>\n`;
+    } else if (tag === 'li_multiple' || tag === 'p_multiple') {
+      const lines = selectedText.split('\n');
+      const tagName = tag === 'li_multiple' ? 'li' : 'p';
+      wrappedText = lines
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(line => `<${tagName}>${line}</${tagName}>`)
+        .join('\n');
+    }
+
+    console.log('Current value before wrap:', textArea.value);
+    console.log('Selected text:', selectedText);
+    console.log('Wrapped text:', wrappedText);
+
+    isManualInput = true;
+    document.execCommand('insertText', false, wrappedText);
+    isManualInput = false;
+
+    // Re-select the wrapped content
+    textArea.setSelectionRange(start, start + wrappedText.length);
+
+    console.log('New value after wrap:', textArea.value);
+
+    saveState(true); // Save the state after modification
+  }
+
+  function saveState(force = false) {
+    const currentValue = textArea.value;
+    const currentSelectionStart = textArea.selectionStart;
+    const currentSelectionEnd = textArea.selectionEnd;
+    if (force || undoStack.length === 0 || undoStack[undoStack.length - 1].value !== currentValue) {
+      console.log('Saving state:', currentValue);
+      undoStack.push({
+        value: currentValue,
+        selectionStart: currentSelectionStart,
+        selectionEnd: currentSelectionEnd
+      });
+      if (undoStack.length > 100) undoStack.shift(); // Limit the undo stack size to 100
+      redoStack.length = 0; // Clear the redo stack on new input
+    } else {
+      console.log('State not saved, as it is identical to the last state.');
+    }
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.key === 'z') {
+      console.log('Ctrl + Z pressed');
+      undo();
+      event.preventDefault(); // Prevent the default action
+    } else if (event.ctrlKey && event.key === 'y') {
+      console.log('Ctrl + Y pressed');
+      redo();
+      event.preventDefault(); // Prevent the default action
+    }
+  });
+
+  function undo() {
+    if (undoStack.length > 1) {
+      console.log('Undoing...');
+      redoStack.push(undoStack.pop());
+      const previousState = undoStack[undoStack.length - 1];
+      isManualInput = true;
+      textArea.value = previousState.value;
+      textArea.setSelectionRange(previousState.selectionStart, previousState.selectionEnd);
+      isManualInput = false;
+      console.log('Current value after undo:', textArea.value);
+    }
+  }
+
+  function redo() {
+    if (redoStack.length > 0) {
+      console.log('Redoing...');
+      const nextState = redoStack.pop();
+      undoStack.push(nextState);
+      isManualInput = true;
+      textArea.value = nextState.value;
+      textArea.setSelectionRange(nextState.selectionStart, nextState.selectionEnd);
+      isManualInput = false;
+      console.log('Current value after redo:', textArea.value);
+    }
+  }
+
+  // Add Ctrl + Click feature to select content inside tags with nested tag awareness
+  textArea.addEventListener('click', function(event) {
+    if (event.ctrlKey) {
+      const cursorPosition = textArea.selectionStart;
+      const text = textArea.value;
+      const tagStack = [];
+      let currentPosition = 0;
+
+      // Traverse through the text to find nested tags
+      while (currentPosition < text.length) {
+        const openTagStart = text.indexOf('<', currentPosition);
+        const closeTagStart = text.indexOf('</', currentPosition);
+        const nextTagStart = openTagStart !== -1 && (closeTagStart === -1 || openTagStart < closeTagStart) ? openTagStart : closeTagStart;
+
+        if (nextTagStart === -1) break;
+
+        const nextTagEnd = text.indexOf('>', nextTagStart);
+        if (nextTagEnd === -1) break;
+
+        const tagContent = text.substring(nextTagStart, nextTagEnd + 1);
+        currentPosition = nextTagEnd + 1;
+
+        if (tagContent.startsWith('</')) {
+          // Closing tag
+          if (tagStack.length > 0 && tagStack[tagStack.length - 1].tagName === tagContent.slice(2, -1)) {
+            const openTag = tagStack.pop();
+            if (openTag.start < cursorPosition && cursorPosition < currentPosition) {
+              textArea.setSelectionRange(openTag.end + 1, nextTagStart);
+              break;
+            }
+          }
+        } else {
+          // Opening tag
+          const tagName = tagContent.slice(1, tagContent.indexOf(' ') > 0 ? tagContent.indexOf(' ') : tagContent.indexOf('>'));
+          tagStack.push({ tagName, start: nextTagStart, end: nextTagEnd });
+        }
       }
-      const range = selection.getRangeAt(0);
-      const selectedText = range.toString();
-      if (!selectedText) {
-        alert('Выделите текст для применения тега!');
-        return;
-      }
-
-      const wrappedText = `<${tag} ${attributes}>${selectedText}</${tag}>`;
-      range.deleteContents();
-
-      const fragment = document.createDocumentFragment();
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = wrappedText;
-      Array.from(tempDiv.childNodes).forEach((node) => fragment.appendChild(node));
-
-      range.insertNode(fragment);
     }
+  });
 
-    // Вставляем разрыв строки
-    function insertLineBreak() {
-      const range = window.getSelection().getRangeAt(0);
-      const br = document.createElement('br');
-      range.insertNode(br);
-    }
+  document.getElementById('copyButton').addEventListener('click', () => {
+  const textArea = document.getElementById('textArea');
+  const renderContainer = document.createElement('div');
 
-    // Вставляем неразрывный пробел
-    function insertNonBreakingSpace() {
-      const range = window.getSelection().getRangeAt(0);
-      const nbsp = document.createTextNode('\u00A0');
-      range.insertNode(nbsp);
-    }
+  // Рендерим HTML-код в контейнере
+  renderContainer.innerHTML = textArea.value;
+  renderContainer.style.position = 'absolute';
+  renderContainer.style.left = '-9999px'; // Убираем контейнер из видимой области
+  renderContainer.style.whiteSpace = 'pre-wrap'; // Сохраняем переносы строк
+  renderContainer.style.fontFamily = 'inherit'; // Наследуем шрифты
+  document.body.appendChild(renderContainer);
 
-    // Копирование текста в буфер обмена
-    function copyToClipboard() {
-      const tempInput = document.createElement('textarea');
-      tempInput.value = editor.innerHTML.trim(); // Убираем лишние пробелы вокруг текста
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      console.log('Text copied to clipboard!'); // Подтверждение в консоли
-    }
-  </script>
+  // Создаём Range и выделяем содержимое контейнера
+  const range = document.createRange();
+  range.selectNodeContents(renderContainer);
+
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  // Копируем выделенное содержимое
+  try {
+    const successful = document.execCommand('copy');
+    console.log(successful ? 'Содержимое успешно скопировано!' : 'Ошибка при копировании.');
+  } catch (err) {
+    console.error('Ошибка при копировании:', err);
+  }
+
+  // Убираем временный контейнер и снимаем выделение
+  selection.removeAllRanges();
+  document.body.removeChild(renderContainer);
+});
+
+
+</script>
 </body>
 </html>

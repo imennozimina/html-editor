@@ -362,22 +362,44 @@
 
   document.getElementById('copyButton').addEventListener('click', () => {
   const textArea = document.getElementById('textArea');
-  const htmlContent = textArea.value;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(textArea.value, "text/html");
 
-  // Копируем HTML в буфер
+  // Удаляем пустые блочные элементы (например, <p>&nbsp;</p>, <h1></h1>)
+  const blockElements = doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6, div");
+  blockElements.forEach((el) => {
+    if (!el.textContent.trim() && !el.querySelector('*')) {
+      el.remove(); // Удаляем, если элемент пустой
+    }
+  });
+
+  // Исправляем ссылки: возвращаем относительные ссылки
+  const links = doc.querySelectorAll('a');
+  links.forEach((link) => {
+    const originalHref = link.getAttribute('href');
+    if (originalHref && link.href.startsWith('file:///')) {
+      link.setAttribute('href', originalHref); // Возвращаем оригинальное относительное значение
+    }
+  });
+
+  // Копируем очищенный HTML
+  const cleanedHTML = doc.body.innerHTML;
+
+  // Используем API clipboard.write для копирования
   navigator.clipboard.write([
     new ClipboardItem({
-      "text/html": new Blob([htmlContent], { type: "text/html" }),
-      "text/plain": new Blob([htmlContent], { type: "text/plain" }),
+      "text/html": new Blob([cleanedHTML], { type: "text/html" }),
+      "text/plain": new Blob([cleanedHTML], { type: "text/plain" }),
     }),
   ])
     .then(() => {
-      console.log("HTML успешно скопирован.");
+      console.log("Чистый HTML успешно скопирован.");
     })
     .catch((err) => {
       console.error("Ошибка при копировании:", err);
     });
 });
+
 
 </script>
 </body>

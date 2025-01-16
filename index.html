@@ -13,10 +13,12 @@
     color: #2f3e46;
   }
    #renderContainer {
-      position: absolute;
-      left: -9999px; /* Убираем из видимой области */
-      white-space: pre-wrap; /* Сохраняем переносы строк */
-      visibility: hidden; /* Делаем элемент невидимым */
+      border: 1px solid #ccc;
+      padding: 15px;
+      background: #f9f9f9;
+      margin-bottom: 20px;
+      white-space: normal;
+      overflow-wrap: break-word;
     }
   #textArea {
     width: 75%;
@@ -131,10 +133,11 @@
   <button onclick="wrapText('a')">&lt;a&gt;</button>
   <button onclick="wrapText('br')">&lt;br&gt;</button>
   <button onclick="wrapText('nbsp')">&lt;nbsp&gt;</button>
+  <button id="renderButton">Рендерить визуально</button>
 <button id="copyButton">Копировать</button>
 
 </div>
-<div id="renderContainer"></div>
+<div id="renderContainer" contenteditable="true"></div>
 
 
 <div class="flex-display">
@@ -360,45 +363,37 @@
     }
   });
 
-  document.getElementById('copyButton').addEventListener('click', () => {
-  const textArea = document.getElementById('textArea');
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(textArea.value, "text/html");
+    function renderVisualContent() {
+  renderContainer.innerHTML = textArea.value;
 
-  // Удаляем пустые блочные элементы (например, <p>&nbsp;</p>, <h1></h1>)
-  const blockElements = doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6, div");
-  blockElements.forEach((el) => {
-    if (!el.textContent.trim() && !el.querySelector('*')) {
-      el.remove(); // Удаляем, если элемент пустой
+  // Удаляем пустые элементы
+  renderContainer.querySelectorAll('*').forEach((el) => {
+    if ((el.tagName === 'P' || el.tagName === 'DIV') && el.innerHTML.trim() === '&nbsp;') {
+      el.remove();
     }
   });
 
-  // Исправляем ссылки: возвращаем относительные ссылки
-  const links = doc.querySelectorAll('a');
-  links.forEach((link) => {
-    const originalHref = link.getAttribute('href');
-    if (originalHref && link.href.startsWith('file:///')) {
-      link.setAttribute('href', originalHref); // Возвращаем оригинальное относительное значение
-    }
-  });
+  console.log('Содержимое отрендерено.');
+}
+function copyRenderedContent() {
+  const range = document.createRange();
+  range.selectNodeContents(renderContainer);
 
-  // Копируем очищенный HTML
-  const cleanedHTML = doc.body.innerHTML;
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
 
-  // Используем API clipboard.write для копирования
-  navigator.clipboard.write([
-    new ClipboardItem({
-      "text/html": new Blob([cleanedHTML], { type: "text/html" }),
-      "text/plain": new Blob([cleanedHTML], { type: "text/plain" }),
-    }),
-  ])
-    .then(() => {
-      console.log("Чистый HTML успешно скопирован.");
-    })
-    .catch((err) => {
-      console.error("Ошибка при копировании:", err);
-    });
-});
+  try {
+    const successful = document.execCommand('copy');
+    console.log(successful ? 'Визуальное содержимое скопировано.' : 'Ошибка при копировании.');
+  } catch (err) {
+    console.error('Ошибка при копировании:', err);
+  }
+
+  selection.removeAllRanges();
+}
+renderButton.addEventListener('click', renderVisualContent);
+copyButton.addEventListener('click', copyRenderedContent);
 
 
 </script>

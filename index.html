@@ -128,13 +128,9 @@
   <button onclick="wrapText('li')">&lt;li&gt;</button>
   <button class="multy" onclick="wrapText('li_multiple')">&lt;li&gt;*</button>
   <button onclick="wrapText('b')">&lt;b&gt;</button>
-  <button onclick="wrapText('strong')">&lt;strong&gt;</button>
   <button onclick="wrapText('a')">&lt;a&gt;</button>
-  <button onclick="wrapText('span')">&lt;span&gt;</button>
   <button onclick="wrapText('br')">&lt;br&gt;</button>
   <button onclick="wrapText('nbsp')">&lt;nbsp&gt;</button>
-  <button class="gray_butn" onclick="wrapText('comment')">!comment</button>
-  <button class="gray_butn" onclick="wrapText('square_brackets')">[...]</button>
 <button id="copyButton">Копировать</button>
 
 </div>
@@ -147,10 +143,6 @@
   <button onclick="wrapText('profile_bonuses_freespins')">a.bonuses freespins</button>
   <button onclick="wrapText('profile_bonuses_casino')">a.bonuses casino</button>
   <button onclick="wrapText('profile_personal_info')">a.personal info</button>
-  <button onclick="wrapText('note_line')">p.note line</button>
-  <button onclick="wrapText('champ_ul')">ul.champ</button>
-  <button onclick="wrapText('money_bold')">money - bold</button>
-  <button onclick="wrapText('money_text')">money</button>
   <button class="prcd_com" onclick="wrapText('promocode_com')">PROMOCODE</button>
   <button class="prcd_kz" onclick="wrapText('promocode_kz')">PROMOCODE</button>
 </div>
@@ -244,14 +236,6 @@
       wrappedText = `<a target="_blank" href="/profile/bonuses/casino">${selectedText}</a>`;
     } else if (tag === 'profile_personal_info') {
       wrappedText = `<a target="_blank" href="/profile/personal-info">${selectedText}</a>`;
-    } else if (tag === 'note_line') {
-      wrappedText = `<p class="note-line">${selectedText}</p>`;
-    } else if (tag === 'champ_ul') {
-      wrappedText = `<ul class="ui-championship-rules__points">\n${selectedText}\n</ul>`;
-    } else if (tag === 'money_bold') {
-      wrappedText = `<b style="white-space: nowrap;">${selectedText}</b>`;
-    } else if (tag === 'money_text') {
-      wrappedText = `<span style="white-space: nowrap;">${selectedText}</span>`;
     } else if (tag === 'ul' || tag === 'ol') {
       wrappedText = `<${tag}>\n${selectedText}\n</${tag}>\n`;
     } else if (tag === 'li_multiple' || tag === 'p_multiple') {

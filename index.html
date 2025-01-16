@@ -378,37 +378,22 @@
 
   document.getElementById('copyButton').addEventListener('click', () => {
   const textArea = document.getElementById('textArea');
-  const renderContainer = document.createElement('div');
+  const htmlContent = textArea.value;
 
-  // Рендерим HTML-код в контейнере
-  renderContainer.innerHTML = textArea.value;
-  renderContainer.style.position = 'absolute';
-  renderContainer.style.left = '-9999px'; // Убираем контейнер из видимой области
-  renderContainer.style.whiteSpace = 'pre-wrap'; // Сохраняем переносы строк
-  renderContainer.style.fontFamily = 'inherit'; // Наследуем шрифты
-  document.body.appendChild(renderContainer);
-
-  // Создаём Range и выделяем содержимое контейнера
-  const range = document.createRange();
-  range.selectNodeContents(renderContainer);
-
-  const selection = window.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
-
-  // Копируем выделенное содержимое
-  try {
-    const successful = document.execCommand('copy');
-    console.log(successful ? 'Содержимое успешно скопировано!' : 'Ошибка при копировании.');
-  } catch (err) {
-    console.error('Ошибка при копировании:', err);
-  }
-
-  // Убираем временный контейнер и снимаем выделение
-  selection.removeAllRanges();
-  document.body.removeChild(renderContainer);
+  // Копируем HTML в буфер
+  navigator.clipboard.write([
+    new ClipboardItem({
+      "text/html": new Blob([htmlContent], { type: "text/html" }),
+      "text/plain": new Blob([htmlContent], { type: "text/plain" }),
+    }),
+  ])
+    .then(() => {
+      console.log("HTML успешно скопирован.");
+    })
+    .catch((err) => {
+      console.error("Ошибка при копировании:", err);
+    });
 });
-
 
 </script>
 </body>

@@ -133,7 +133,6 @@
   <button onclick="wrapText('a')">&lt;a&gt;</button>
   <button onclick="wrapText('br')">&lt;br&gt;</button>
   <button onclick="wrapText('nbsp')">&lt;nbsp&gt;</button>
-  <button id="renderButton">Рендерить визуально</button>
 <button id="copyButton">Копировать</button>
 
 </div>
@@ -158,8 +157,6 @@
 <script>
   const textArea = document.getElementById('textArea');
   const renderContainer = document.getElementById('renderContainer');
-  const renderButton = document.getElementById('renderButton'); // Кнопка для рендера
-  const copyButton = document.getElementById('copyButton'); // Кнопка для копирования
   const undoStack = [];
   const redoStack = [];
   let isManualInput = false;
@@ -366,7 +363,7 @@
     }
   });
 
-   function renderVisualContent() {
+  function renderVisualContent() {
     renderContainer.innerHTML = textArea.value;
 
     // Удаляем пустые элементы
@@ -375,12 +372,9 @@
         el.remove();
       }
     });
-
-    console.log('Содержимое отрендерено.');
   }
 
 function copyRenderedContent() {
-    // Исправляем ссылки перед копированием
     renderContainer.querySelectorAll('a[href]').forEach((link) => {
       const href = link.getAttribute('href');
       if (href.startsWith(window.location.origin)) {
@@ -405,8 +399,14 @@ function copyRenderedContent() {
     selection.removeAllRanges();
   }
 
-  renderButton.addEventListener('click', renderVisualContent);
-  copyButton.addEventListener('click', copyRenderedContent);
+   // Событие для обновления отображения кода в режиме реального времени
+  textArea.addEventListener('input', renderVisualContent);
+
+  // Событие для копирования визуального содержимого
+  document.getElementById('copyButton').addEventListener('click', copyRenderedContent);
+
+  // Инициализируем отображение при загрузке страницы
+  renderVisualContent();
 
 
 </script>

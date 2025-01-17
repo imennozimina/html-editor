@@ -375,13 +375,16 @@
   }
 
 function copyRenderedContent() {
+    // Обрабатываем ссылки в renderContainer, чтобы относительные ссылки не преобразовывались
     renderContainer.querySelectorAll('a[href]').forEach((link) => {
-      const href = link.getAttribute('href');
-      if (href.startsWith(window.location.origin)) {
-        link.setAttribute('href', href.replace(window.location.origin, ''));
-      }
+        const href = link.getAttribute('href');
+        // Если ссылка начинается с домена или является абсолютной (например, http://), заменяем на исходное значение
+        if (href.startsWith(window.location.origin)) {
+            link.setAttribute('href', href.replace(window.location.origin, ''));
+        }
     });
 
+    // Создаём объект Range и выделяем содержимое renderContainer
     const range = document.createRange();
     range.selectNodeContents(renderContainer);
 
@@ -390,14 +393,15 @@ function copyRenderedContent() {
     selection.addRange(range);
 
     try {
-      const successful = document.execCommand('copy');
-      console.log(successful ? 'Визуальное содержимое скопировано.' : 'Ошибка при копировании.');
+        const successful = document.execCommand('copy');
+        console.log(successful ? 'Визуальное содержимое скопировано.' : 'Ошибка при копировании.');
     } catch (err) {
-      console.error('Ошибка при копировании:', err);
+        console.error('Ошибка при копировании:', err);
     }
 
     selection.removeAllRanges();
-  }
+}
+
 
    // Событие для обновления отображения кода в режиме реального времени
   textArea.addEventListener('input', renderVisualContent);

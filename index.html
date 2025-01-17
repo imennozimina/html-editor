@@ -12,7 +12,7 @@
     font-family: Arial, sans-serif;
     color: #2f3e46;
   }
-   #renderContainer {
+   #renderIframe {
       border: 1px solid #ccc;
       padding: 15px;
       background: #f9f9f9;
@@ -136,7 +136,7 @@
 <button id="copyButton">Копировать</button>
 
 </div>
-<div id="renderContainer" contenteditable="true"></div>
+<iframe id="renderIframe" sandbox="allow-same-origin allow-scripts"></iframe>
 
 
 <div class="flex-display">
@@ -156,7 +156,8 @@
 
 <script>
   const textArea = document.getElementById('textArea');
-  const renderContainer = document.getElementById('renderContainer');
+  const renderIframe = document.getElementById('renderIframe');
+  const copyButton = document.getElementById('copyButton');
   const undoStack = [];
   const redoStack = [];
   let isManualInput = false;
@@ -363,54 +364,73 @@
     }
   });
 
-  function renderVisualContent() {
-    renderContainer.innerHTML = textArea.value;
+  // Рендерим содержимое textarea в iframe
+  function renderContentInIframe() {
+  const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
 
-    // Удаляем пустые элементы
-    renderContainer.querySelectorAll('*').forEach((el) => {
-      if ((el.tagName === 'P' || el.tagName === 'DIV') && el.innerHTML.trim() === '&nbsp;') {
-        el.remove();
-      }
-    });
+  iframeDocument.open();
+  iframeDocument.write(`
+    <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            color: #000;
+            background: #fff;
+            margin: 0;
+            padding: 10px;
+          }
+          a {
+            color: blue;
+            text-decoration: underline;
+          }
+          strong, b {
+            font-weight: bold;
+          }
+        </style>
+      </head>
+      <body>${textArea.value}</body>
+    </html>
+  `);
+  iframeDocument.close();
+}
+  
+  // Копируем содержимое iframe
+  function copyIframeContent() {
+  const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
+
+  if (!iframeDocument) {
+    console.error("iframe не найден!");
+    return;
   }
 
-function copyRenderedContent() {
-    // Обрабатываем ссылки в renderContainer, чтобы относительные ссылки не преобразовывались
-    renderContainer.querySelectorAll('a[href]').forEach((link) => {
-        const href = link.getAttribute('href');
-        // Если ссылка начинается с домена или является абсолютной (например, http://), заменяем на исходное значение
-        if (href.startsWith(window.location.origin)) {
-            link.setAttribute('href', href.replace(window.location.origin, ''));
-        }
-    });
+  const iframeBody = iframeDocument.body;
+  const range = iframeDocument.createRange();
+  range.selectNodeContents(iframeBody);
 
-    // Создаём объект Range и выделяем содержимое renderContainer
-    const range = document.createRange();
-    range.selectNodeContents(renderContainer);
+  const selection = iframeDocument.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
 
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
+  try {
+    const successful = iframeDocument.execCommand('copy');
+    console.log(successful ? "Визуальное содержимое скопировано." : "Ошибка при копировании.");
+  } catch (err) {
+    console.error("Ошибка при копировании:", err);
+  }
 
-    try {
-        const successful = document.execCommand('copy');
-        console.log(successful ? 'Визуальное содержимое скопировано.' : 'Ошибка при копировании.');
-    } catch (err) {
-        console.error('Ошибка при копировании:', err);
-    }
-
-    selection.removeAllRanges();
+  selection.removeAllRanges();
 }
 
-
    // Событие для обновления отображения кода в режиме реального времени
-  textArea.addEventListener('input', renderVisualContent);
+  textArea.addEventListener('input', renderContentInIframe);
 
   // Событие для копирования визуального содержимого
-  document.getElementById('copyButton').addEventListener('click', copyRenderedContent);
+  document.getElementById('copyButton').addEventListener('click', copyIframeContent);
 
   // Инициализируем отображение при загрузке страницы
-  renderVisualContent();
+  renderContentInIframe();
 
 
 </script>

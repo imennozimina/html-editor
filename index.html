@@ -157,6 +157,9 @@
 
 <script>
   const textArea = document.getElementById('textArea');
+  const renderContainer = document.getElementById('renderContainer');
+  const renderButton = document.getElementById('renderButton'); // Кнопка для рендера
+  const copyButton = document.getElementById('copyButton'); // Кнопка для копирования
   const undoStack = [];
   const redoStack = [];
   let isManualInput = false;
@@ -363,37 +366,47 @@
     }
   });
 
-    function renderVisualContent() {
-  renderContainer.innerHTML = textArea.value;
+   function renderVisualContent() {
+    renderContainer.innerHTML = textArea.value;
 
-  // Удаляем пустые элементы
-  renderContainer.querySelectorAll('*').forEach((el) => {
-    if ((el.tagName === 'P' || el.tagName === 'DIV') && el.innerHTML.trim() === '&nbsp;') {
-      el.remove();
-    }
-  });
+    // Удаляем пустые элементы
+    renderContainer.querySelectorAll('*').forEach((el) => {
+      if ((el.tagName === 'P' || el.tagName === 'DIV') && el.innerHTML.trim() === '&nbsp;') {
+        el.remove();
+      }
+    });
 
-  console.log('Содержимое отрендерено.');
-}
-function copyRenderedContent() {
-  const range = document.createRange();
-  range.selectNodeContents(renderContainer);
-
-  const selection = window.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
-
-  try {
-    const successful = document.execCommand('copy');
-    console.log(successful ? 'Визуальное содержимое скопировано.' : 'Ошибка при копировании.');
-  } catch (err) {
-    console.error('Ошибка при копировании:', err);
+    console.log('Содержимое отрендерено.');
   }
 
-  selection.removeAllRanges();
-}
-renderButton.addEventListener('click', renderVisualContent);
-copyButton.addEventListener('click', copyRenderedContent);
+function copyRenderedContent() {
+    // Исправляем ссылки перед копированием
+    renderContainer.querySelectorAll('a[href]').forEach((link) => {
+      const href = link.getAttribute('href');
+      if (href.startsWith(window.location.origin)) {
+        link.setAttribute('href', href.replace(window.location.origin, ''));
+      }
+    });
+
+    const range = document.createRange();
+    range.selectNodeContents(renderContainer);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    try {
+      const successful = document.execCommand('copy');
+      console.log(successful ? 'Визуальное содержимое скопировано.' : 'Ошибка при копировании.');
+    } catch (err) {
+      console.error('Ошибка при копировании:', err);
+    }
+
+    selection.removeAllRanges();
+  }
+
+  renderButton.addEventListener('click', renderVisualContent);
+  copyButton.addEventListener('click', copyRenderedContent);
 
 
 </script>

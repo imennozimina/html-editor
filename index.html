@@ -422,27 +422,33 @@ function processLinksInIframe() {
 function copyContentFromIframe() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
 
-  // Process links before copying
+  // Обрабатываем ссылки для сохранения относительных путей
   processLinksInIframe();
 
-  console.log('Copying content from iframe...');
-  const range = iframeDocument.createRange();
-  range.selectNodeContents(iframeDocument.body);
+  // Получаем текст из iframe
+  const contentToCopy = iframeDocument.body.innerHTML;
 
-  const selection = iframeDocument.defaultView.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
+  // Создаем временный textarea
+  const tempTextarea = document.createElement('textarea');
+  tempTextarea.value = contentToCopy;
 
+  // Добавляем textarea в документ
+  document.body.appendChild(tempTextarea);
+
+  // Выделяем содержимое и копируем
+  tempTextarea.select();
   try {
-    const successful = iframeDocument.execCommand('copy');
+    const successful = document.execCommand('copy');
     console.log(successful ? 'Content successfully copied.' : 'Copying failed.');
   } catch (err) {
     console.error('Error during copying:', err);
   }
 
-  selection.removeAllRanges();
+  // Удаляем временный textarea
+  document.body.removeChild(tempTextarea);
 }
 
+copyButton.addEventListener('click', copyContentFromIframe);
 
 
 // Attach event listeners
@@ -450,9 +456,8 @@ textArea.addEventListener('input', () => {
   renderContentInIframe();
 });
 
-copyButton.addEventListener('click', () => {
-  copyContentFromIframe();
-});
+copyButton.addEventListener('click', copyContentFromIframe);
+
 
 // Initialize iframe content on page load
 renderContentInIframe();

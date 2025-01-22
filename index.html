@@ -364,29 +364,46 @@
     }
   });
 
-function copyVisualContent() {
+function copyRenderedContent() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
 
-  // Копируем содержимое iframe, преобразуя его в текст
-  const contentToCopy = iframeDocument.body.cloneNode(true);
+  console.log("Start copying visual content...");
 
-  // Удаляем абсолютные ссылки
-  contentToCopy.querySelectorAll('a[href]').forEach((link) => {
-    const href = link.getAttribute('href');
-    if (href && href.startsWith('https://imennozimina.github.io')) {
-      const updatedHref = href.replace('https://imennozimina.github.io', '');
-      link.setAttribute('href', updatedHref);
+  // Обрабатываем ссылки внутри iframe перед копированием
+  iframeDocument.querySelectorAll('a[href]').forEach((link) => {
+    const originalHref = link.getAttribute('href');
+    console.log(`Original href before processing: ${originalHref}`);
+
+    if (originalHref.startsWith(window.location.origin)) {
+      const processedHref = originalHref.replace(window.location.origin, '');
+      link.setAttribute('href', processedHref);
+      console.log(`Processed href to relative: ${processedHref}`);
+    } else {
+      console.log(`No changes made to href: ${originalHref}`);
     }
   });
 
-  // Создаем временный элемент для визуальной части
+  // Создаём временной div для принудительного копирования текста
   const tempDiv = document.createElement('div');
   tempDiv.style.position = 'absolute';
   tempDiv.style.left = '-9999px';
-  tempDiv.appendChild(contentToCopy);
+  tempDiv.innerHTML = iframeDocument.body.innerHTML;
 
+  // Вставляем временной div на страницу
   document.body.appendChild(tempDiv);
 
+  // Обрабатываем ссылки в временном div перед копированием
+  tempDiv.querySelectorAll('a[href]').forEach((link) => {
+    const href = link.getAttribute('href');
+    console.log(`Processing href in temporary div: ${href}`);
+    if (href.startsWith(window.location.origin)) {
+      const relativeHref = href.replace(window.location.origin, '');
+      link.setAttribute('href', relativeHref);
+      console.log(`Updated href in temporary div: ${relativeHref}`);
+    }
+  });
+
+  // Копируем содержимое временного div
   const range = document.createRange();
   range.selectNodeContents(tempDiv);
 
@@ -396,16 +413,21 @@ function copyVisualContent() {
 
   try {
     const successful = document.execCommand('copy');
-    console.log(successful ? 'Визуальная часть скопирована.' : 'Ошибка при копировании.');
+    console.log(successful ? 'Visual content successfully copied.' : 'Failed to copy visual content.');
   } catch (err) {
-    console.error('Ошибка при копировании:', err);
+    console.error('Error during copying:', err);
   }
 
-  // Очищаем выделение и удаляем временный элемент
-  selection.removeAllRanges();
+  // Удаляем временной div
   document.body.removeChild(tempDiv);
+
+  // Снимаем выделение
+  selection.removeAllRanges();
+
+  console.log("Copying process completed.");
 }
 
+// Функция для обновления содержимого iframe
 function renderContentInIframe() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
   iframeDocument.open();
@@ -435,22 +457,28 @@ function renderContentInIframe() {
   `);
   iframeDocument.close();
 
-  // Убедимся, что ссылки остаются относительными
+  console.log("Iframe content rendered. Checking links...");
+
+  // Логируем все ссылки для анализа
   iframeDocument.querySelectorAll('a[href]').forEach((link) => {
-    const href = link.getAttribute('href');
-    if (href && href.startsWith('https://imennozimina.github.io')) {
-      link.setAttribute('href', href.replace('https://imennozimina.github.io', ''));
-    }
+    console.log(`Initial href: ${link.getAttribute('href')}`);
   });
 }
 
-// Подключаем события
-textArea.addEventListener('input', renderContentInIframe);
-copyButton.addEventListener('click', copyVisualContent);
+// Событие для рендеринга содержимого в iframe при вводе
+textArea.addEventListener('input', () => {
+  renderContentInIframe();
+  console.log("Content updated in iframe.");
+});
 
-// Инициализация при загрузке
+// Кнопка для копирования содержимого
+document.getElementById('copyButton').addEventListener('click', () => {
+  console.log("Copy button clicked.");
+  copyRenderedContent();
+});
+
+// Инициализация рендеринга при загрузке страницы
 renderContentInIframe();
-
 
 </script>
 </body>

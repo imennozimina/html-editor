@@ -367,7 +367,6 @@
   // Рендерим содержимое textarea в iframe
   function renderContentInIframe() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
-
   iframeDocument.open();
   iframeDocument.write(`
     <html>
@@ -395,42 +394,53 @@
   `);
   iframeDocument.close();
 }
+
+// Функция обработки ссылок
+function processLinksInIframe() {
+  const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
+  iframeDocument.querySelectorAll('a[href]').forEach((link) => {
+    const href = link.getAttribute('href');
+    if (href.startsWith(window.location.origin)) {
+      // Удаляем текущий домен из абсолютной ссылки
+      link.setAttribute('href', href.replace(window.location.origin, ''));
+    }
+  });
+}
   
-  // Копируем содержимое iframe
-  function copyIframeContent() {
+// Обработчик события копирования
+function copyContentFromIframe() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
 
-  if (!iframeDocument) {
-    console.error("iframe не найден!");
-    return;
-  }
+  // Обрабатываем ссылки перед копированием
+  processLinksInIframe();
 
-  const iframeBody = iframeDocument.body;
   const range = iframeDocument.createRange();
-  range.selectNodeContents(iframeBody);
+  range.selectNodeContents(iframeDocument.body);
 
-  const selection = iframeDocument.getSelection();
+  const selection = iframeDocument.defaultView.getSelection();
   selection.removeAllRanges();
   selection.addRange(range);
 
   try {
     const successful = iframeDocument.execCommand('copy');
-    console.log(successful ? "Визуальное содержимое скопировано." : "Ошибка при копировании.");
+    console.log(successful ? 'Содержимое успешно скопировано.' : 'Ошибка при копировании.');
   } catch (err) {
-    console.error("Ошибка при копировании:", err);
+    console.error('Ошибка при копировании:', err);
   }
 
   selection.removeAllRanges();
 }
-
-   // Событие для обновления отображения кода в режиме реального времени
-  textArea.addEventListener('input', renderContentInIframe);
-
-  // Событие для копирования визуального содержимого
-  document.getElementById('copyButton').addEventListener('click', copyIframeContent);
-
-  // Инициализируем отображение при загрузке страницы
+  // Привязываем обработчики
+textArea.addEventListener('input', () => {
   renderContentInIframe();
+});
+
+copyButton.addEventListener('click', () => {
+  copyContentFromIframe();
+});
+
+// Инициализация
+renderContentInIframe();
 
 
 </script>

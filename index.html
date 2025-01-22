@@ -365,7 +365,7 @@
   });
 
   // Рендерим содержимое textarea в iframe
-  function renderContentInIframe() {
+ function renderContentInIframe() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
   iframeDocument.open();
   iframeDocument.write(`
@@ -393,16 +393,27 @@
     </html>
   `);
   iframeDocument.close();
+
+  console.log('Iframe content rendered. Checking links:');
+  iframeDocument.querySelectorAll('a[href]').forEach((link) => {
+    console.log(`Initial href: ${link.getAttribute('href')}`);
+  });
 }
 
 // Функция обработки ссылок
 function processLinksInIframe() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
+
+  console.log('Processing links for relative paths...');
   iframeDocument.querySelectorAll('a[href]').forEach((link) => {
     const href = link.getAttribute('href');
-    if (href.startsWith(window.location.origin)) {
-      // Удаляем текущий домен из абсолютной ссылки
-      link.setAttribute('href', href.replace(window.location.origin, ''));
+    console.log(`Before processing: ${href}`);
+    if (href && href.startsWith(window.location.origin)) {
+      const relativeHref = href.replace(window.location.origin, '');
+      link.setAttribute('href', relativeHref);
+      console.log(`Converted to relative: ${relativeHref}`);
+    } else {
+      console.log('No change needed.');
     }
   });
 }
@@ -411,9 +422,10 @@ function processLinksInIframe() {
 function copyContentFromIframe() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
 
-  // Обрабатываем ссылки перед копированием
+  // Process links before copying
   processLinksInIframe();
 
+  console.log('Copying content from iframe...');
   const range = iframeDocument.createRange();
   range.selectNodeContents(iframeDocument.body);
 
@@ -423,14 +435,17 @@ function copyContentFromIframe() {
 
   try {
     const successful = iframeDocument.execCommand('copy');
-    console.log(successful ? 'Содержимое успешно скопировано.' : 'Ошибка при копировании.');
+    console.log(successful ? 'Content successfully copied.' : 'Copying failed.');
   } catch (err) {
-    console.error('Ошибка при копировании:', err);
+    console.error('Error during copying:', err);
   }
 
   selection.removeAllRanges();
 }
-  // Привязываем обработчики
+
+
+
+// Attach event listeners
 textArea.addEventListener('input', () => {
   renderContentInIframe();
 });
@@ -439,7 +454,7 @@ copyButton.addEventListener('click', () => {
   copyContentFromIframe();
 });
 
-// Инициализация
+// Initialize iframe content on page load
 renderContentInIframe();
 
 

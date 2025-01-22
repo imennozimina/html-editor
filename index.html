@@ -12,14 +12,6 @@
     font-family: Arial, sans-serif;
     color: #2f3e46;
   }
-   #renderIframe {
-      border: 1px solid #ccc;
-      padding: 15px;
-      background: #f9f9f9;
-      margin-bottom: 20px;
-      white-space: normal;
-      overflow-wrap: break-word;
-    }
   #textArea {
     width: 75%;
     height: 400px;
@@ -92,36 +84,29 @@
   #presetMenu button:active {
     background-color: #2a3a41;
   }
-  #presetMenu .prcd_com {
-    border: 2px solid #FFC700;
-    background-color: #000;
-    color: #FFC700;
-    font-weight: 600;
-  }
-  #presetMenu .prcd_kz {
-    border: 2px solid #FF2400;
-    background-color: #fff;
-    color: #FF2400;
-    font-weight: 600;
-  }
-  #copyButton {
-  margin-left: 10px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: #4caf50;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-#copyButton:hover {
-  background-color: #45a049;
-}
+  .history-container {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    .history-btn {
+        background-color: #a2b4c2;
+        color: #352f44;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+    .history-btn:hover {
+        background-color: #8296a6;
+    }
 
 </style>
 </head>
 <body>
+
 <div id="tagMenu">
   <button onclick="wrapText('p')">&lt;p&gt;</button>
   <button class="multy" onclick="wrapText('p_multiple')">&lt;p&gt;*</button>
@@ -129,15 +114,15 @@
   <button onclick="wrapText('ol')">&lt;ol&gt;</button>
   <button onclick="wrapText('li')">&lt;li&gt;</button>
   <button class="multy" onclick="wrapText('li_multiple')">&lt;li&gt;*</button>
-  <button onclick="wrapText('b')">&lt;b&gt;</button>
+  <button onclick="wrapText('strong')">&lt;strong&gt;</button>
   <button onclick="wrapText('a')">&lt;a&gt;</button>
+  <button onclick="wrapText('span')">&lt;span&gt;</button>
   <button onclick="wrapText('br')">&lt;br&gt;</button>
-  <button onclick="wrapText('nbsp')">&lt;nbsp&gt;</button>
-<button id="copyButton">Копировать</button>
-
+  <button class="gray_butn" onclick="wrapText('square_brackets')">[...]</button>
+  <input id="findText" type="text" placeholder="Find">
+  <input id="replaceText" type="text" placeholder="Replace">
+  <button class="btn-find-replace" onclick="findAndReplace()">Replace All</button>
 </div>
-<iframe id="renderIframe" sandbox="allow-same-origin allow-scripts"></iframe>
-
 
 <div class="flex-display">
 <div id="presetMenu">
@@ -145,22 +130,27 @@
   <button onclick="wrapText('profile_bonuses_freespins')">a.bonuses freespins</button>
   <button onclick="wrapText('profile_bonuses_casino')">a.bonuses casino</button>
   <button onclick="wrapText('profile_personal_info')">a.personal info</button>
-  <button class="prcd_com" onclick="wrapText('promocode_com')">PROMOCODE</button>
-  <button class="prcd_kz" onclick="wrapText('promocode_kz')">PROMOCODE</button>
+  <button onclick="wrapText('note_line')">p.note line</button>
+  <button onclick="wrapText('champ_ul')">ul.champ</button>
+  <button onclick="wrapText('b_nowrap')">b-nowrap</button>
+  <button onclick="wrapText('span_nowrap')">span-nowrap</button>
+  <button onclick="wrapText('promocode_com')">promocode 💛</button>
+  <button onclick="wrapText('promocode_kz')">promocode ❤️</button>
 </div>
 
 <textarea id="textArea" placeholder="Введите текст здесь..." spellcheck="false"></textarea>
-
 </div>
+<div class="history-container" id="historyContainer"></div>
 
 
 <script>
   const textArea = document.getElementById('textArea');
-  const renderIframe = document.getElementById('renderIframe');
-  const copyButton = document.getElementById('copyButton');
   const undoStack = [];
   const redoStack = [];
   let isManualInput = false;
+  let history = [];
+  let historyIndex = -1;
+  let replaceHistory = [];
 
   textArea.addEventListener('dblclick', function (event) {
     setTimeout(() => {
@@ -229,9 +219,9 @@
     } else if (tag === 'square_brackets') {
       wrappedText = `[${selectedText}]`;
     } else if (tag === 'promocode_com') {
-      wrappedText = `<strong style="color: #FFC700">${selectedText}</strong>`;
+      wrappedText = `<b style="color: #FFC700" translate="no">${selectedText}</b>`;
     } else if (tag === 'promocode_kz') {
-      wrappedText = `<b style="color: #FF2400">${selectedText}</b>`;
+      wrappedText = `<b style="color: #FF2400" translate="no">${selectedText}</b>`;
     } else if (tag === 'profile_bonuses_sport') {
       wrappedText = `<a target="_blank" href="/profile/bonuses/sport">${selectedText}</a>`;
     } else if (tag === 'profile_bonuses_freespins') {
@@ -240,6 +230,14 @@
       wrappedText = `<a target="_blank" href="/profile/bonuses/casino">${selectedText}</a>`;
     } else if (tag === 'profile_personal_info') {
       wrappedText = `<a target="_blank" href="/profile/personal-info">${selectedText}</a>`;
+    } else if (tag === 'note_line') {
+      wrappedText = `<p class="note-line">${selectedText}</p>`;
+    } else if (tag === 'champ_ul') {
+      wrappedText = `<ul class="ui-championship-rules__points">\n${selectedText}\n</ul>`;
+    } else if (tag === 'b_nowrap') {
+      wrappedText = `<b style="white-space: nowrap;">${selectedText}</b>`;
+    } else if (tag === 'span_nowrap') {
+      wrappedText = `<span style="white-space: nowrap;">${selectedText}</span>`;
     } else if (tag === 'ul' || tag === 'ol') {
       wrappedText = `<${tag}>\n${selectedText}\n</${tag}>\n`;
     } else if (tag === 'li_multiple' || tag === 'p_multiple') {
@@ -364,122 +362,47 @@
     }
   });
 
-function copyRenderedContent() {
-  const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
+  function findAndReplace() {
+        const textArea = document.getElementById("textArea");
+        const findText = document.getElementById("findText").value;
+        const replaceText = document.getElementById("replaceText").value;
 
-  console.log("Start copying visual content...");
+        if (findText === "") return;
 
-  // Обрабатываем ссылки внутри iframe перед копированием
-  iframeDocument.querySelectorAll('a[href]').forEach((link) => {
-    const originalHref = link.getAttribute('href');
-    console.log(`Original href before processing: ${originalHref}`);
-
-    if (originalHref.startsWith(window.location.origin)) {
-      const processedHref = originalHref.replace(window.location.origin, '');
-      link.setAttribute('href', processedHref);
-      console.log(`Processed href to relative: ${processedHref}`);
-    } else {
-      console.log(`No changes made to href: ${originalHref}`);
+        try {
+            const regex = new RegExp(findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g");
+            textArea.value = textArea.value.replace(regex, replaceText);
+            console.log(`Replaced "${findText}" with "${replaceText}". Resulting text:`, textArea.value);
+            if (!replaceHistory.some(entry => entry.findText === findText && entry.replaceText === replaceText)) {
+                saveReplaceHistory(findText, replaceText);
+            }
+        } catch (e) {
+            console.error("Error with regular expression:", e);
+        }
+        saveState();
     }
-  });
 
-  // Создаём временной div для принудительного копирования текста
-  const tempDiv = document.createElement('div');
-  tempDiv.style.position = 'absolute';
-  tempDiv.style.left = '-9999px';
-  tempDiv.innerHTML = iframeDocument.body.innerHTML;
-
-  // Вставляем временной div на страницу
-  document.body.appendChild(tempDiv);
-
-  // Обрабатываем ссылки в временном div перед копированием
-  tempDiv.querySelectorAll('a[href]').forEach((link) => {
-    const href = link.getAttribute('href');
-    console.log(`Processing href in temporary div: ${href}`);
-    if (href.startsWith(window.location.origin)) {
-      const relativeHref = href.replace(window.location.origin, '');
-      link.setAttribute('href', relativeHref);
-      console.log(`Updated href in temporary div: ${relativeHref}`);
+    function saveReplaceHistory(findText, replaceText) {
+        replaceHistory.unshift({ findText, replaceText });
+        if (replaceHistory.length > 10) replaceHistory.pop();
+        updateReplaceHistoryUI();
     }
-  });
 
-  // Копируем содержимое временного div
-  const range = document.createRange();
-  range.selectNodeContents(tempDiv);
-
-  const selection = window.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
-
-  try {
-    const successful = document.execCommand('copy');
-    console.log(successful ? 'Visual content successfully copied.' : 'Failed to copy visual content.');
-  } catch (err) {
-    console.error('Error during copying:', err);
-  }
-
-  // Удаляем временной div
-  document.body.removeChild(tempDiv);
-
-  // Снимаем выделение
-  selection.removeAllRanges();
-
-  console.log("Copying process completed.");
-}
-
-// Функция для обновления содержимого iframe
-function renderContentInIframe() {
-  const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
-  iframeDocument.open();
-  iframeDocument.write(`
-    <html>
-      <head>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            line-height: 1.5;
-            color: #000;
-            background: #fff;
-            margin: 0;
-            padding: 10px;
-          }
-          a {
-            color: blue;
-            text-decoration: underline;
-          }
-          strong, b {
-            font-weight: bold;
-          }
-        </style>
-      </head>
-      <body>${textArea.value}</body>
-    </html>
-  `);
-  iframeDocument.close();
-
-  console.log("Iframe content rendered. Checking links...");
-
-  // Логируем все ссылки для анализа
-  iframeDocument.querySelectorAll('a[href]').forEach((link) => {
-    console.log(`Initial href: ${link.getAttribute('href')}`);
-  });
-}
-
-// Событие для рендеринга содержимого в iframe при вводе
-textArea.addEventListener('input', () => {
-  renderContentInIframe();
-  console.log("Content updated in iframe.");
-});
-
-// Кнопка для копирования содержимого
-document.getElementById('copyButton').addEventListener('click', () => {
-  console.log("Copy button clicked.");
-  copyRenderedContent();
-});
-
-// Инициализация рендеринга при загрузке страницы
-renderContentInIframe();
-
+    function updateReplaceHistoryUI() {
+        const historyContainer = document.getElementById("historyContainer");
+        historyContainer.innerHTML = "";
+        replaceHistory.forEach((entry) => {
+            const button = document.createElement("button");
+            button.classList.add("history-btn");
+            button.textContent = `${entry.findText} → ${entry.replaceText}`;
+            button.onclick = () => {
+                document.getElementById("findText").value = entry.findText;
+                document.getElementById("replaceText").value = entry.replaceText;
+                findAndReplace();
+            };
+            historyContainer.appendChild(button);
+        });
+    }
 </script>
 </body>
 </html>

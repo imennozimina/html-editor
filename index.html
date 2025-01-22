@@ -364,10 +364,10 @@
     }
   });
 
-  function copyRenderedContent() {
+function copyRenderedContent() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
 
-  // Удаляем ваш домен из ссылок перед копированием
+  // Обрабатываем все ссылки перед копированием
   iframeDocument.querySelectorAll('a[href]').forEach((link) => {
     const href = link.getAttribute('href');
     if (href && href.startsWith('https://imennozimina.github.io')) {
@@ -377,7 +377,7 @@
     }
   });
 
-  // Копируем содержимое iframe
+    // Создаем Range для копирования содержимого iframe
   const range = iframeDocument.createRange();
   range.selectNodeContents(iframeDocument.body);
 
@@ -386,6 +386,7 @@
   selection.addRange(range);
 
   try {
+    // Копируем содержимое
     const successful = document.execCommand('copy');
     console.log(successful ? 'Визуальное содержимое скопировано.' : 'Ошибка при копировании.');
   } catch (err) {
@@ -396,7 +397,7 @@
   selection.removeAllRanges();
 }
 
-  // Рендерим содержимое textarea в iframe
+// Функция рендера содержимого в iframe
 function renderContentInIframe() {
   const iframeDocument = renderIframe.contentDocument || renderIframe.contentWindow.document;
   iframeDocument.open();
@@ -426,10 +427,9 @@ function renderContentInIframe() {
   `);
   iframeDocument.close();
 
-  // Проверка ссылок после рендера
+  // Убедимся, что ссылки остаются относительными
   iframeDocument.querySelectorAll('a[href]').forEach((link) => {
     const href = link.getAttribute('href');
-    console.log(`Initial href: ${href}`);
     if (href && href.startsWith('https://imennozimina.github.io')) {
       link.setAttribute('href', href.replace('https://imennozimina.github.io', ''));
       console.log(`Processed href: ${link.getAttribute('href')}`);
@@ -442,7 +442,7 @@ function renderContentInIframe() {
 textArea.addEventListener('input', renderContentInIframe);
 copyButton.addEventListener('click', copyRenderedContent);
 
-// Инициализация при загрузке страницы
+// Инициализация при загрузке
 renderContentInIframe();
 
 

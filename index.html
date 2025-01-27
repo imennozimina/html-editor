@@ -14,7 +14,7 @@
   }
   #textArea {
     width: 75%;
-    height: 400px;
+    height: 550px;
     border: 2px solid #1f2e2d;
     border-radius: 5px;
     padding: 10px;
@@ -102,6 +102,9 @@
     .history-btn:hover {
         background-color: #8296a6;
     }
+    #findText, #replaceText {
+      width: 100px;
+    }
 
 </style>
 </head>
@@ -119,9 +122,12 @@
   <button onclick="wrapText('span')">&lt;span&gt;</button>
   <button onclick="wrapText('br')">&lt;br&gt;</button>
   <button class="gray_butn" onclick="wrapText('square_brackets')">[...]</button>
+  <button onclick="wrapText('details')">&lt;det&gt;</button>
+  <button onclick="wrapText('summary')">&lt;summ&gt;</button>
   <input id="findText" type="text" placeholder="Find">
   <input id="replaceText" type="text" placeholder="Replace">
   <button class="btn-find-replace" onclick="findAndReplace()">Replace All</button>
+
 </div>
 
 <div class="flex-display">
@@ -134,6 +140,8 @@
   <button onclick="wrapText('champ_ul')">ul.champ</button>
   <button onclick="wrapText('b_nowrap')">b-nowrap</button>
   <button onclick="wrapText('span_nowrap')">span-nowrap</button>
+  <button onclick="wrapText('table_2')">tab-smm-2-col</button>
+  <button onclick="wrapText('table_4')">tab-4-rows</button>
   <button onclick="wrapText('promocode_com')">promocode 💛</button>
   <button onclick="wrapText('promocode_kz')">promocode ❤️</button>
 </div>
@@ -234,11 +242,83 @@
       wrappedText = `<p class="note-line">${selectedText}</p>`;
     } else if (tag === 'champ_ul') {
       wrappedText = `<ul class="ui-championship-rules__points">\n${selectedText}\n</ul>`;
+    } else if (tag === 'table_2') {
+      wrappedText = `<table style="text-align: center;">
+    <tr>
+        <th>Место</th>
+        <th>Приз</th>
+    </tr>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Apple iPad Air 11</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>200 ₼ фрибетом*</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>180 ₼ фрибетом*</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>150 ₼ фрибетом*</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>120 ₼ фрибетом*</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>100 ₼ фрибетом*</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>80 ₼ фрибетом*</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>50 ₼ фрибетом*</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>40 ₼ фрибетом*</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>30 ₼ фрибетом*</td>
+        </tr>
+    </tbody>
+</table>`;
+    } else if (tag === 'table_4') {
+      wrappedText = `<table style="text-align: center;">
+    <tbody>
+        <tr>
+            <td>Промокод</td>
+            <td>PROMOCODE1</td>
+        </tr>
+        <tr>
+            <td>Процент бонуса</td>
+            <td>50%</td>
+        </tr>
+        <tr>
+            <td>Минимальная сумма депозита</td>
+            <td>[MINDEP1]</td>
+        </tr>
+        <tr>
+            <td>Максимальная сумма бонуса</td>
+            <td>[MAXBON1]</td>
+        </tr>
+    </tbody>
+</table>`;
     } else if (tag === 'b_nowrap') {
       wrappedText = `<b style="white-space: nowrap;">${selectedText}</b>`;
     } else if (tag === 'span_nowrap') {
       wrappedText = `<span style="white-space: nowrap;">${selectedText}</span>`;
     } else if (tag === 'ul' || tag === 'ol') {
+      wrappedText = `<${tag}>\n${selectedText}\n</${tag}>\n`;
+    } else if (tag === 'details') {
       wrappedText = `<${tag}>\n${selectedText}\n</${tag}>\n`;
     } else if (tag === 'li_multiple' || tag === 'p_multiple') {
       const lines = selectedText.split('\n');

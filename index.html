@@ -14,7 +14,7 @@
   }
   #textArea {
     width: 75%;
-    height: 550px;
+    height: 650px;
     border: 2px solid #1f2e2d;
     border-radius: 5px;
     padding: 10px;
@@ -135,7 +135,9 @@
   <button onclick="wrapText('profile_bonuses_sport')">a.bonuses sport</button>
   <button onclick="wrapText('profile_bonuses_freespins')">a.bonuses freespins</button>
   <button onclick="wrapText('profile_bonuses_casino')">a.bonuses casino</button>
+  <button onclick="wrapText('bonus_policy')">a.bonus-7</button>
   <button onclick="wrapText('profile_personal_info')">a.personal info</button>
+  <button onclick="wrapText('terms')">a.terms</button>
   <button onclick="wrapText('note_line')">p.note line</button>
   <button onclick="wrapText('champ_ul')">ul.champ</button>
   <button onclick="wrapText('b_nowrap')">b-nowrap</button>
@@ -236,8 +238,12 @@
       wrappedText = `<a target="_blank" href="/profile/bonuses/freespins">${selectedText}</a>`;
     } else if (tag === 'profile_bonuses_casino') {
       wrappedText = `<a target="_blank" href="/profile/bonuses/casino">${selectedText}</a>`;
+    } else if (tag === 'bonus_policy') {
+      wrappedText = `<a target="_blank" href="/bonuses#bonus-7">${selectedText}</a>`;
     } else if (tag === 'profile_personal_info') {
       wrappedText = `<a target="_blank" href="/profile/personal-info">${selectedText}</a>`;
+    } else if (tag === 'terms') {
+      wrappedText = `<a target="_blank" href="/terms">${selectedText}</a>`;
     } else if (tag === 'note_line') {
       wrappedText = `<p class="note-line">${selectedText}</p>`;
     } else if (tag === 'champ_ul') {
